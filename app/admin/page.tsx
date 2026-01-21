@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { addWordPairs } from "@/lib/admin-actions";
+import { addWordPairs, diagnoseDatabaseStructure } from "@/lib/admin-actions";
 
 const LANGUAGES = [
   { value: "es", label: "Español" },
@@ -30,6 +30,27 @@ export default function AdminPanel() {
   const [language, setLanguage] = useState("es");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [diagnostic, setDiagnostic] = useState<{
+    status: string;
+    message: string;
+    columns?: string[];
+    hasNewStructure?: boolean;
+    hasOldStructure?: boolean;
+    needsMigration?: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    // Ejecutar diagnóstico al cargar el componente
+    const runDiagnostic = async () => {
+      try {
+        const result = await diagnoseDatabaseStructure();
+        setDiagnostic(result);
+      } catch (error) {
+        console.error("Error en diagnóstico:", error);
+      }
+    };
+    runDiagnostic();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +171,37 @@ export default function AdminPanel() {
               </li>
             </ul>
           </div>
+
+          {diagnostic && (
+            <div className="mt-8 p-4 bg-yellow-50 rounded border">
+              <h3 className="font-semibold mb-2">
+                🔍 Diagnóstico de Base de Datos:
+              </h3>
+              <div className="text-sm space-y-1">
+                <p>
+                  <strong>Estado:</strong> {diagnostic.status}
+                </p>
+                <p>
+                  <strong>Mensaje:</strong> {diagnostic.message}
+                </p>
+                {diagnostic.columns && (
+                  <p>
+                    <strong>Columnas encontradas:</strong>{" "}
+                    {diagnostic.columns.join(", ")}
+                  </p>
+                )}
+                {diagnostic.needsMigration && (
+                  <div className="mt-2 p-2 bg-orange-100 rounded">
+                    <p className="text-orange-800 font-medium">
+                      ⚠️ Se necesita migración: La base de datos tiene la
+                      estructura anterior. Ejecuta el script{" "}
+                      <code>004_simplify_words_system.sql</code>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
