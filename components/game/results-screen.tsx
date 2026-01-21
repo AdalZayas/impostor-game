@@ -172,16 +172,13 @@ export function ResultsScreen({
                     Palabra secreta:
                   </p>
                   <Badge variant="outline" className="text-lg px-4 py-2">
-                    {round.common_word}
+                    {round.secret_word}
                   </Badge>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    Palabra del impostor:
+                    El impostor NO conocía esta palabra
                   </p>
-                  <Badge variant="destructive" className="text-lg px-4 py-2">
-                    {round.impostor_word}
-                  </Badge>
                 </div>
               </div>
 
@@ -317,19 +314,16 @@ export function ResultsScreen({
                 <div className="grid gap-4 md:grid-cols-2 pt-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">
-                      Palabra común:
+                      Palabra secreta:
                     </p>
                     <Badge variant="outline" className="text-lg px-4 py-2">
-                      {round.common_word}
+                      {round.secret_word}
                     </Badge>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">
-                      Palabra del impostor:
+                      El impostor NO conocía esta palabra
                     </p>
-                    <Badge variant="destructive" className="text-lg px-4 py-2">
-                      {round.impostor_word}
-                    </Badge>
                   </div>
                 </div>
 
@@ -407,19 +401,16 @@ export function ResultsScreen({
                 <div className="grid gap-4 md:grid-cols-2 pt-4">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">
-                      Palabra común:
+                      Palabra secreta:
                     </p>
                     <Badge variant="outline" className="text-lg px-4 py-2">
-                      {round.common_word}
+                      {round.secret_word}
                     </Badge>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">
-                      Palabra del impostor:
+                      El impostor NO conocía esta palabra
                     </p>
-                    <Badge variant="destructive" className="text-lg px-4 py-2">
-                      {round.impostor_word}
-                    </Badge>
                   </div>
                 </div>
               </CardContent>
