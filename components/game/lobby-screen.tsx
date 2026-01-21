@@ -1,145 +1,134 @@
-"use client"
+"use client";
 
-import type { GameRoom, RoomPlayer, Player } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { startGame, toggleReady, leaveRoom, updateRoomSettings, kickPlayer } from "@/lib/game-actions"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Copy, Check, Users, Clock, Trophy, Settings, X } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
+import type { GameRoom, RoomPlayer, Player } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  startGame,
+  toggleReady,
+  leaveRoom,
+  updateRoomSettings,
+  kickPlayer,
+} from "@/lib/game-actions";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Copy, Check, Users, Clock, Trophy, Settings, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LobbyScreenProps {
-  room: GameRoom
-  players: (RoomPlayer & { players: Player })[]
-  currentUser: Player
-  isHost: boolean
+  room: GameRoom;
+  players: (RoomPlayer & { players: Player })[];
+  currentUser: Player;
+  isHost: boolean;
 }
 
-const CATEGORIES = [
-  "Animales",
-  "Frutas",
-  "Deportes",
-  "Profesiones",
-  "Transporte",
-  "Comida",
-  "Lugares",
-  "Instrumentos",
-  "Colores",
-  "Tecnología",
-]
+export function LobbyScreen({
+  room,
+  players,
+  currentUser,
+  isHost,
+}: LobbyScreenProps) {
+  const [isStarting, setIsStarting] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const router = useRouter();
 
-const DIFFICULTIES = [
-  { value: "easy", label: "Fácil" },
-  { value: "medium", label: "Medio" },
-  { value: "hard", label: "Difícil" },
-]
+  const [maxPlayers, setMaxPlayers] = useState(room.max_players);
+  const [roundDuration, setRoundDuration] = useState(room.round_duration);
+  const [totalRounds, setTotalRounds] = useState(room.total_rounds);
+  const [isSaving, setIsSaving] = useState(false);
 
-export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenProps) {
-  const [isStarting, setIsStarting] = useState(false)
-  const [isToggling, setIsToggling] = useState(false)
-  const [isLeaving, setIsLeaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const router = useRouter()
-
-  const [maxPlayers, setMaxPlayers] = useState(room.max_players)
-  const [roundDuration, setRoundDuration] = useState(room.round_duration)
-  const [totalRounds, setTotalRounds] = useState(room.total_rounds)
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(room.selected_categories || CATEGORIES)
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string[]>(
-    room.selected_difficulty || ["easy", "medium", "hard"],
-  )
-  const [isSaving, setIsSaving] = useState(false)
-
-  const currentPlayer = players.find((p) => p.player_id === currentUser.id)
-  const allReady = players.every((p) => p.is_ready)
-  const canStart = players.length >= 3 && allReady
+  const currentPlayer = players.find((p) => p.player_id === currentUser.id);
+  const allReady = players.every((p) => p.is_ready);
+  const canStart = players.length >= 3 && allReady;
 
   const handleCopyCode = async () => {
-    await navigator.clipboard.writeText(room.code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    await navigator.clipboard.writeText(room.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleStartGame = async () => {
-    setIsStarting(true)
-    setError(null)
+    setIsStarting(true);
+    setError(null);
     try {
-      await startGame(room.id)
+      await startGame(room.id);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Error al iniciar el juego")
+      setError(
+        error instanceof Error ? error.message : "Error al iniciar el juego"
+      );
     } finally {
-      setIsStarting(false)
+      setIsStarting(false);
     }
-  }
+  };
 
   const handleToggleReady = async () => {
-    setIsToggling(true)
-    setError(null)
+    setIsToggling(true);
+    setError(null);
     try {
-      await toggleReady(room.id)
+      await toggleReady(room.id);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Error al cambiar estado")
+      setError(
+        error instanceof Error ? error.message : "Error al cambiar estado"
+      );
     } finally {
-      setIsToggling(false)
+      setIsToggling(false);
     }
-  }
+  };
 
   const handleLeave = async () => {
-    setIsLeaving(true)
+    setIsLeaving(true);
     try {
-      await leaveRoom(room.id)
-      router.push("/game")
+      await leaveRoom(room.id);
+      router.push("/game");
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Error al salir")
-      setIsLeaving(false)
+      setError(error instanceof Error ? error.message : "Error al salir");
+      setIsLeaving(false);
     }
-  }
+  };
 
   const handleSaveSettings = async () => {
-    setIsSaving(true)
-    setError(null)
+    setIsSaving(true);
+    setError(null);
     try {
       await updateRoomSettings(room.id, {
         maxPlayers,
         roundDuration,
         totalRounds,
-        selectedCategories,
-        selectedDifficulty,
-      })
-      setShowSettings(false)
+      });
+      setShowSettings(false);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Error al guardar configuración")
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Error al guardar configuración"
+      );
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleKickPlayer = async (playerId: string) => {
     try {
-      await kickPlayer(room.id, playerId)
+      await kickPlayer(room.id, playerId);
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Error al expulsar jugador")
+      setError(
+        error instanceof Error ? error.message : "Error al expulsar jugador"
+      );
     }
-  }
-
-  const toggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
-    )
-  }
-
-  const toggleDifficulty = (difficulty: string) => {
-    setSelectedDifficulty((prev) =>
-      prev.includes(difficulty) ? prev.filter((d) => d !== difficulty) : [...prev, difficulty],
-    )
-  }
+  };
 
   return (
     <div className="flex min-h-svh w-full flex-col items-center justify-center p-6 md:p-10">
@@ -147,17 +136,29 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold">Sala de Espera</h1>
           <div className="flex items-center justify-center gap-2">
-            <code className="text-3xl font-mono font-bold tracking-wider">{room.code}</code>
+            <code className="text-3xl font-mono font-bold tracking-wider">
+              {room.code}
+            </code>
             <Button variant="ghost" size="icon" onClick={handleCopyCode}>
-              {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+              {copied ? (
+                <Check className="h-5 w-5" />
+              ) : (
+                <Copy className="h-5 w-5" />
+              )}
             </Button>
           </div>
-          <p className="text-muted-foreground">Comparte este código con tus amigos</p>
+          <p className="text-muted-foreground">
+            Comparte este código con tus amigos
+          </p>
         </div>
 
         {isHost && (
           <div className="flex justify-center">
-            <Button variant="outline" onClick={() => setShowSettings(!showSettings)} className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowSettings(!showSettings)}
+              className="gap-2"
+            >
               <Settings className="h-4 w-4" />
               {showSettings ? "Ocultar Configuración" : "Configurar Juego"}
             </Button>
@@ -168,19 +169,21 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
           <Card>
             <CardHeader>
               <CardTitle>Configuración del Juego</CardTitle>
-              <CardDescription>Personaliza las reglas antes de empezar</CardDescription>
+              <CardDescription>
+                Personaliza las reglas antes de empezar
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-1">
                   <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="categories">Categorías</TabsTrigger>
-                  <TabsTrigger value="difficulty">Dificultad</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="general" className="space-y-4 pt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="maxPlayers">Máximo de Jugadores: {maxPlayers}</Label>
+                    <Label htmlFor="maxPlayers">
+                      Máximo de Jugadores: {maxPlayers}
+                    </Label>
                     <Input
                       id="maxPlayers"
                       type="range"
@@ -192,7 +195,10 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="totalRounds">Rondas antes de votación (vueltas completas): {totalRounds}</Label>
+                    <Label htmlFor="totalRounds">
+                      Rondas antes de votación (vueltas completas):{" "}
+                      {totalRounds}
+                    </Label>
                     <p className="text-xs text-muted-foreground">
                       Cada ronda = todos los jugadores hablan una vez en orden
                     </p>
@@ -207,8 +213,12 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="roundDuration">Tiempo por turno: {roundDuration}s</Label>
-                    <p className="text-xs text-muted-foreground">Cada jugador tiene este tiempo para hablar</p>
+                    <Label htmlFor="roundDuration">
+                      Tiempo por turno: {roundDuration}s
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Cada jugador tiene este tiempo para hablar
+                    </p>
                     <Input
                       id="roundDuration"
                       type="range"
@@ -220,48 +230,13 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
                     />
                   </div>
                 </TabsContent>
-
-                <TabsContent value="categories" className="space-y-3 pt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Selecciona las categorías de palabras ({selectedCategories.length} seleccionadas)
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {CATEGORIES.map((category) => (
-                      <div key={category} className="flex items-center space-x-2">
-                        <Switch
-                          id={category}
-                          checked={selectedCategories.includes(category)}
-                          onCheckedChange={() => toggleCategory(category)}
-                        />
-                        <Label htmlFor={category} className="cursor-pointer">
-                          {category}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="difficulty" className="space-y-3 pt-4">
-                  <p className="text-sm text-muted-foreground">Selecciona los niveles de dificultad</p>
-                  <div className="space-y-3">
-                    {DIFFICULTIES.map((diff) => (
-                      <div key={diff.value} className="flex items-center space-x-2">
-                        <Switch
-                          id={diff.value}
-                          checked={selectedDifficulty.includes(diff.value)}
-                          onCheckedChange={() => toggleDifficulty(diff.value)}
-                        />
-                        <Label htmlFor={diff.value} className="cursor-pointer">
-                          {diff.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
               </Tabs>
 
               <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" onClick={() => setShowSettings(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSettings(false)}
+                >
                   Cancelar
                 </Button>
                 <Button onClick={handleSaveSettings} disabled={isSaving}>
@@ -317,16 +292,21 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
             <CardTitle>Jugadores en la Sala</CardTitle>
             <CardDescription>
               {players.length < 3
-                ? `Se necesitan al menos 3 jugadores (${3 - players.length} más)`
+                ? `Se necesitan al menos 3 jugadores (${
+                    3 - players.length
+                  } más)`
                 : allReady
-                  ? "¡Todos listos! El anfitrión puede iniciar el juego"
-                  : "Esperando a que todos estén listos..."}
+                ? "¡Todos listos! El anfitrión puede iniciar el juego"
+                : "Esperando a que todos estén listos..."}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3">
               {players.map((player) => (
-                <div key={player.id} className="flex items-center justify-between rounded-lg border p-3">
+                <div
+                  key={player.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
                       {player.players.display_name.charAt(0).toUpperCase()}
@@ -372,7 +352,12 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
 
         <div className="flex gap-4">
           {isHost ? (
-            <Button onClick={handleStartGame} disabled={!canStart || isStarting} className="flex-1" size="lg">
+            <Button
+              onClick={handleStartGame}
+              disabled={!canStart || isStarting}
+              className="flex-1"
+              size="lg"
+            >
               {isStarting ? "Iniciando..." : "Iniciar Juego"}
             </Button>
           ) : (
@@ -383,15 +368,24 @@ export function LobbyScreen({ room, players, currentUser, isHost }: LobbyScreenP
               className="flex-1"
               size="lg"
             >
-              {isToggling ? "Cambiando..." : currentPlayer?.is_ready ? "Cancelar" : "¡Listo!"}
+              {isToggling
+                ? "Cambiando..."
+                : currentPlayer?.is_ready
+                ? "Cancelar"
+                : "¡Listo!"}
             </Button>
           )}
 
-          <Button onClick={handleLeave} disabled={isLeaving} variant="outline" size="lg">
+          <Button
+            onClick={handleLeave}
+            disabled={isLeaving}
+            variant="outline"
+            size="lg"
+          >
             {isLeaving ? "Saliendo..." : "Salir"}
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

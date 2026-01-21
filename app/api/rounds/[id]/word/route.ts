@@ -52,9 +52,8 @@ export async function GET(
     const isImpostor = round.impostor_player_id === player.id;
 
     return NextResponse.json({
-      word: isImpostor ? null : round.common_word, // Impostor gets null, not the secret word
+      word: isImpostor ? null : round.secret_word, // Impostor gets null, others get the secret word
       isImpostor,
-      category: round.category,
     });
   } catch (error) {
     console.error("Error getting player word:", error);

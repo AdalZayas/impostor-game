@@ -44,7 +44,6 @@ export function GameScreen({
   const [timeLeft, setTimeLeft] = useState(0);
   const [playerWord, setPlayerWord] = useState<string | null>(null);
   const [isImpostor, setIsImpostor] = useState(false);
-  const [category, setCategory] = useState("");
 
   const currentTurnPlayerId = round.turn_order[round.current_turn_index];
   const currentTurnPlayer = players.find(
@@ -60,7 +59,6 @@ export function GameScreen({
         // CRITICAL: API returns null for impostor, never the secret word
         setPlayerWord(wordData.word);
         setIsImpostor(wordData.isImpostor);
-        setCategory(wordData.category);
       } catch (error) {
         console.error("Error loading word:", error);
       }
@@ -132,7 +130,6 @@ export function GameScreen({
           <h1 className="text-2xl font-bold">
             Ronda {round.current_sub_round} de {room.total_rounds}
           </h1>
-          <p className="text-muted-foreground">Categoría: {category}</p>
           <Badge
             variant={timeLeft > 10 ? "default" : "destructive"}
             className="text-lg px-4 py-2"

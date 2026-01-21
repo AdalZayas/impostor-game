@@ -110,13 +110,10 @@ export async function startRound(roomId: string, roundNumber: number) {
     .from("word_pairs")
     .select("*")
     .eq("is_active", true)
-    .in("category", room.selected_categories || [])
-    .in("difficulty", room.selected_difficulty || []);
+    .eq("language", "es"); // Solo palabras en español por ahora
 
   if (!wordPairs || wordPairs.length === 0) {
-    throw new Error(
-      "No hay pares de palabras disponibles con la configuración seleccionada"
-    );
+    throw new Error("No hay pares de palabras disponibles");
   }
 
   const wordPair = wordPairs[Math.floor(Math.random() * wordPairs.length)];
@@ -165,9 +162,7 @@ export async function startRound(roomId: string, roundNumber: number) {
     .insert({
       room_id: roomId,
       round_number: roundNumber,
-      category: wordPair.category,
-      common_word: wordPair.common_word,
-      impostor_word: wordPair.impostor_word,
+      secret_word: wordPair.secret_word,
       impostor_player_id: impostorId,
       ends_at: endsAt.toISOString(),
       status: "active",
@@ -763,9 +758,8 @@ export async function getPlayerWord(roundId: string) {
   const isImpostor = round.impostor_player_id === playerId;
 
   return {
-    word: isImpostor ? round.impostor_word : round.common_word,
+    word: isImpostor ? null : round.secret_word, // Impostor gets null, others get the secret word
     isImpostor,
-    category: round.category,
   };
 }
 
@@ -775,8 +769,6 @@ export async function updateRoomSettings(
     maxPlayers?: number;
     roundDuration?: number;
     totalRounds?: number;
-    selectedCategories?: string[];
-    selectedDifficulty?: string[];
   }
 ) {
   const supabase = await createClient();
@@ -820,20 +812,6 @@ export async function updateRoomSettings(
       throw new Error("Total de rondas debe estar entre 1 y 10");
     }
     updates.total_rounds = settings.totalRounds;
-  }
-
-  if (settings.selectedCategories !== undefined) {
-    if (settings.selectedCategories.length === 0) {
-      throw new Error("Debe seleccionar al menos una categoría");
-    }
-    updates.selected_categories = settings.selectedCategories;
-  }
-
-  if (settings.selectedDifficulty !== undefined) {
-    if (settings.selectedDifficulty.length === 0) {
-      throw new Error("Debe seleccionar al menos un nivel de dificultad");
-    }
-    updates.selected_difficulty = settings.selectedDifficulty;
   }
 
   // Update room
