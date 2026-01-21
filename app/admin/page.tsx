@@ -34,8 +34,20 @@ export default function AdminPanel() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!secretWord) {
+    const trimmedWord = secretWord.trim();
+
+    if (!trimmedWord) {
       setMessage("La palabra secreta es obligatoria");
+      return;
+    }
+
+    if (trimmedWord.length < 2) {
+      setMessage("La palabra debe tener al menos 2 caracteres");
+      return;
+    }
+
+    if (trimmedWord.length > 50) {
+      setMessage("La palabra no puede tener más de 50 caracteres");
       return;
     }
 
@@ -45,7 +57,7 @@ export default function AdminPanel() {
     try {
       await addWordPairs([
         {
-          secret_word: secretWord,
+          secret_word: trimmedWord,
           language,
         },
       ]);
